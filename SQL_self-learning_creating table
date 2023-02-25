@@ -1,0 +1,56 @@
+#Create database trading;
+#USE trading;
+	##DROP TABLE IF EXISTS cashflow_log_backup ;
+	#CREATE TABLE cashflow_log_backup(
+				#time VARCHAR(50) NOT NULL,
+				#open_price VARCHAR(50) NOT NULL,
+				#close_price FLOAT NOT NULL,
+				#holding_time VARCHAR(50) NOT NULL,
+				#bundle_no INT,
+				#cash_flow VARCHAR(50) NOT NULL,
+               #trade_vol VARCHAR(50),
+                #count INT NOT NULL, 
+				#PRIMARY KEY (count));
+
+#Create database updates;
+USE updates ;
+
+	DROP TABLE IF EXISTS cashflow_log_updates ;
+	CREATE TABLE cashflow_log_updates(
+				time VARCHAR(50) NOT NULL,
+				open_price VARCHAR(50) NOT NULL,
+				close_price FLOAT NOT NULL,
+				holding_time VARCHAR(50) NOT NULL,
+				bundle_no INT,
+				cash_flow VARCHAR(50) NOT NULL,
+                trade_vol VARCHAR(50),
+                count INT NOT NULL, 
+				PRIMARY KEY (count));
+    
+LOAD DATA INFILE 'C:/ProgramData/MySQL/cashflow_log.csv'
+INTO TABLE updates.cashflow_log_updates
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+USE trading;
+DROP TABLE IF EXISTS cashflow_log;
+CREATE TABLE cashflow_log
+SELECT *
+FROM 
+   (
+		SELECT *
+		FROM trading.cashflow_log_backup
+			UNION 
+		SELECT *
+		FROM updates.cashflow_log_updates 
+        )AS A;
+ 
+USE trading;
+DROP TABLE IF EXISTS cashflow_log_backup;
+CREATE TABLE cashflow_log_backup
+SELECT *
+FROM cashflow_log;
+
+SELECT 'Update completed' as '';
